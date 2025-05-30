@@ -7,15 +7,12 @@ using MongoDB.Driver;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-var mongoClient = new MongoClient("mongodb://admin:admin@localhost/");
-var database = mongoClient.GetDatabase("mongocorp");
-
 
 app.MapPost("/api/corporate", async ([FromBody] CreateCorporateRequest request) =>
 {
 });
 
-app.MapGet("/api/corporate", async () =>
+app.MapGet("/api/corporate", async ([FromQuery] string? bank) =>
 {
 });
 

@@ -10,8 +10,9 @@ public class Corporate
   public required string Id { get; set; }
   public required string Name { get; set; }
   public List<Employee> Employees { get; set; } = [];
+  public required string Bank { get; set; }
 
-  public static Corporate Create(string name) => new() { Id = ObjectId.GenerateNewId().ToString(), Name = name };
+  public static Corporate Create(string name, string bank) => new() { Id = ObjectId.GenerateNewId().ToString(), Name = name,Bank=bank };
 }
 
 public class Employee
@@ -23,6 +24,12 @@ public class Employee
   public static Employee Create(string name) => new() { Id = ObjectId.GenerateNewId().ToString(), FullName = name, IsActive = true };
   public bool IsActive { get; set; }
 }
+
+// public class EnbdCorporate : Corporate
+// {
+//   public required string EnbdReferenceNumber { get; set; }
+//   public static EnbdCorporate Create(string name, string bank, string enbdReferenceNumber) => new() { Id = ObjectId.GenerateNewId().ToString(), Name = name,  Bank = bank, EnbdReferenceNumber = enbdReferenceNumber };
+// }
 
 public class Card
 {
@@ -40,7 +47,8 @@ public class Card
 }
 
 
-public record CreateCorporateRequest(string Name);
+public record CreateCorporateRequest(string Name,string Bank);
+// public record CreateCorporateRequest(string Name,string Bank,string EnbdReferenceNumber);
 public record CreateEmployeeRequest(string FullName);
 public record CreateCardRequest(string CardNumber, DateTime ExpiryDate);
 

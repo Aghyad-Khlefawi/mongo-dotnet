@@ -10,16 +10,21 @@ var app = builder.Build();
 var mongoClient = new MongoClient("mongodb://admin:admin@localhost/");
 var database = mongoClient.GetDatabase("mongocorp");
 
-if (database.GetCollection<Corporate>("corporates").CountDocuments(_=>true) == 0)
+if (database.GetCollection<Corporate>("corporates").CountDocuments(_ => true) == 0)
   for (int i = 0; i < 200; i++)
   {
     var corp = new Faker<Corporate>().RuleFor(e => e.Name, e => e.Company.CompanyName())
       .RuleFor(e => e.Id, ObjectId.GenerateNewId().ToString())
+        .RuleFor(e => e.Bank, "RAK")
       .Generate();
     var cards = new List<Card>();
     for (int j = 0; j < Random.Shared.Next(2, 10); j++)
     {
-      Employee item = new Faker<Employee>().RuleFor(e => e.Id, ObjectId.GenerateNewId().ToString()).RuleFor(e => e.FullName, e => e.Name.FullName()).RuleFor(e => e.IsActive, true).Generate();
+      Employee item = new Faker<Employee>().RuleFor(e => e.Id, ObjectId.GenerateNewId().ToString())
+        .RuleFor(e => e.FullName, e => e.Name.FullName())
+        .RuleFor(e => e.IsActive, true)
+        .Generate();
+
       corp.Employees.Add(item);
       for (int k = 0; k < Random.Shared.Next(1, 2); k++)
       {
@@ -39,13 +44,15 @@ string corporatesCollection = "corporates";
 
 app.MapPost("/api/corporate", async ([FromBody] CreateCorporateRequest request) =>
 {
-  var corporate = Corporate.Create(request.Name);
+  Corporate corporate = request.Bank == "ENBD" ? EnbdCorporate.Create(request.Name, request.Bank, request.EnbdReferenceNumber) : Corporate.Create(request.Name, request.Bank);
   await database.GetCollection<Corporate>(corporatesCollection).InsertOneAsync(corporate);
   return Results.Ok(corporate);
 });
 
-app.MapGet("/api/corporate", async () =>
+app.MapGet("/api/corporate", async ([FromQuery] string? bank) =>
 {
+  if (bank == "ENBD")
+    return Results.Ok(await database.GetCollection<EnbdCorporate>(corporatesCollection).Find(Builders<EnbdCorporate>.Filter.Eq(e => e.Bank, bank)).ToListAsync());
   return Results.Ok(await database.GetCollection<Corporate>(corporatesCollection).Find(FilterDefinition<Corporate>.Empty).ToListAsync());
 });
 
